@@ -7,20 +7,19 @@ class Reverse(object):
         return [i for i in payload if i.isalnum()]
 
 
-    def reverse_string(self, ls: []) -> []:
-        left, right = 0
-        #lens(ls)=-1
-        '''while left<right:
+    def reverse_list(self, ls: []) -> []:
+        left = 0
+        right = 0
+        # lens(ls)=-1
+        while left<right:
             ls[left], ls[right] = ls[right],ls[left]
             left +=1
-            right -=1'''
-        return ls[::-1]
-
-        # ls.reversed()        <- weird
-
+            right -=1
+        # ls.reversed()        <- weird"""
+            return ls[::-1]
 
     def list_to_str(self, ls: []) -> str:
-        return ''.join([i for i in ls])
+        return "".join([i for i in ls])
 
 """
 if __name__ == '__main__':

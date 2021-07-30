@@ -17,7 +17,7 @@ class Palindrome(object):
 
         return True
     """
-        return {"result": False for i in ls if ls.pop(0) != ls.pop()}
+        return {"result": True for i in ls if ls.pop(0) != ls.pop()}
 
 """
 if __name__ == '__main__':

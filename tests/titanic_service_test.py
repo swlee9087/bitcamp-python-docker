@@ -11,15 +11,17 @@ class TitanicServiceTest(unittest.TestCase):
         print(self.mock.new_model("test"))
 
     def create_train(self):
-        return None
+        return self.mock.train.drop('Survived', axis=1)
 
     def count_survived_dead(self):
         return []
 
     def create_label(self):
+
         return None
 
     def drop_feature(self, *feature):
+
         return None
 
     def embarked_nominal(self):  # QSC

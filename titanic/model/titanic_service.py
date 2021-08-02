@@ -2,6 +2,8 @@ import pandas as pd
 
 # 2
 from python.titanic.model.dataset import Dataset
+from sklearn.model_selection import KFold, cross_val_score
+from sklearn.ensemble import RandomForestClassifier
 
 
 class TitanicService(object):
@@ -14,17 +16,20 @@ class TitanicService(object):
         return pd.read_csv(this.context + this.fname)"""
         return pd.read_csv(f"/data/{payload}.csv")
 
-    def create_train(self):
-        return None
+    @staticmethod
+    def create_train(this) -> object:
+        return this.train.drop('Survived', axis=1)  # del "Survived' col from dataset
 
-    def count_survived_dead(self):
-        return []
+    @staticmethod
+    def create_label(this) -> object:
+        return this.train['Survived']
 
-    def create_label(self):
-        return None
-
-    def drop_feature(self, *feature):
-        return None
+    @staticmethod
+    def drop_feature(this, *feature) -> object:  # data features to omit from set because they are irrelevant as death cause
+        for i in feature:
+            this.train = this.train.drop([i], axis=1)
+            this.test = this.test.drop([i], axis=1)
+        return this
 
     def embarked_nominal(self):  # QSC
         return None

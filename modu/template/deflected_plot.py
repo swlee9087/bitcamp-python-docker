@@ -25,7 +25,7 @@ class TemperatureChangesOnMyBirthday(object):
         next(data)
         self.data = data
 
-    """def show_max_temps(self):
+    def show_max_temps(self):
         return [i[-1] for i in self.data]
 
     def save_max_temps(self):
@@ -37,12 +37,12 @@ class TemperatureChangesOnMyBirthday(object):
     #        min_temp: [i[-2] for i in data if i[-1] != '' and i[0].split('-')[0] <= 1990]
 
     def visualize_max_temps(self):
-        #        plt.title('Temp changes on my birthday')
+        plt.title('Temp changes on my birthday')
         plt.plot(self.max_temps, 'r')
-        #        plt.plot(self.min_temps, 'b', label='min temp')
+        plt.plot(self.min_temps, 'b', label='min temp')
         plt.figure(figsize=(20, 2))
         #        plt.legend()
-        plt.show()"""
+        plt.show()
 
     def birthday_temps(self):
         high = []

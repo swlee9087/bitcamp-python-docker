@@ -1,4 +1,4 @@
-from titanic.templates.plot import Plot
+from python.titanic.templates.plot import Plot
 
 if __name__ == '__main__':
     while 1:

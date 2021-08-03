@@ -58,19 +58,18 @@ class TitanicService(object):
     @staticmethod
     def title_nominal(this) -> object:  # mr mrs miss master ms -> numbers
         combine = [this.train, this.test]
+        title_mapping = {'Mr':1, 'Ms':2, 'Mrs':3, 'Master':4, 'Nobles':5, 'Rare':6}
         for dataset in combine:
             dataset['Title'] = dataset.Name.str.extract('([A-Za-z]+)\.', expand=False)  # vvv specific. expand=False to stop reading further
         for dataset in combine:
             dataset["Title"] = dataset['Title'].replace(['Capt', 'Col', 'Don', 'Dr', 'Major', 'Rev', 'Jonkheer','Dona','Mme'], 'Rare')
-            dataset["Title"] = dataset['Title'].replace(['Mile'], 'Mr')
+            dataset["Title"] = dataset['Title'].replace(['Mlle'], 'Mr')
             dataset["Title"] = dataset['Title'].replace(['Miss'], 'Ms')
             dataset["Title"] = dataset['Title'].replace(['Countess', 'Lady', 'Sir'], 'Nobles')
-        title_mapping = {'Mr':1, 'Ms':2, 'Mrs':3, 'Master':4, 'Nobles':5, 'Rare':6}
-        for dataset in combine:
-            dataset['Title'] = dataset['Title'].map(title_mapping)
             dataset['Title'] = dataset['Title'].fillna(0)  # for those without titles
-        this.train = this.train
-        this.test = this.test
+            dataset['Title'] = dataset['Title'].map(title_mapping)
+        """this.train = this.train
+        this.test = this.test"""
         return this
 
     @staticmethod
@@ -79,8 +78,8 @@ class TitanicService(object):
         sex_mapping = {'male':0, 'female':1}
         for dataset in combine:
             dataset['Gender'] = dataset['Sex'].map(sex_mapping)
-        this.train = this.train
-        this.test = this.test
+        """this.train = this.train
+        this.test = this.test"""
         return this
 
     @staticmethod
@@ -91,27 +90,40 @@ class TitanicService(object):
         test['Age'] = test['Age'].fillna(-0.5)
         bins = [-1, 0, 5, 12, 18, 24, 35, 60, np.inf]
         labels = ['Unknown','Baby','Child','Teenager','Student','Young Adult','Adult', 'Senior']
+        age_mapping = {'Unknown': 0, 'Baby': 1, 'Child': 2, 'Teenager': 3, 'Student': 4, 'Young Adult': 5, 'Adult': 6,
+                       'Senior': 7}
+        """
         train['AgeGroup'] = pd.cut(train['Age'], bins, labels=labels)  # unlike qcut(0 that divs equally into qrts, cut() divs as bins specified
-        test['AgeGroup'] = pd.cut(test['Age'], bins, labels=labels)
+        test['AgeGroup'] = pd.cut(test['Age'], bins, labels=labels)        
         age_title_mapping = {0: 'Unknown', 1: 'Baby', 2: 'Child', 3: 'Teenager', 4: 'Student', 5: 'Young Adult',
                              6: 'Adult', 7: 'Senior'}
+     
         for i in range(len(train['AgeGroup'])):
             if train['AgeGroup'][i] == 'Unknown':
                 train['AgeGroup'][i] =age_title_mapping[train['Title'][i]]
         for i in range(len(test['AgeGroup'])):
             if test['AgeGroup'][i] == 'Unknown':
                 test['AgeGroup'][i] =age_title_mapping[test['Title'][i]]
-        age_mapping = {'Unknown': 0, 'Baby': 1, 'Child': 2, 'Teenager': 3, 'Student': 4, 'Young Adult': 5, 'Adult': 6,
-                       'Senior': 7}
+        
+        
         train['AgeGroup'] = train['AgeGroup'].map(age_mapping)
         test['AgeGroup'] = test['AgeGroup'].map(age_mapping)
         this.train = this.train
         this.test = this.test
+        """
+        for i in train, test:
+            i['AgeGroup'] = pd.cut(i['Age'], bins=bins, labels=labels)
+            i['AgeGroup'] = i['AgeGroup'].map(age_mapping)
         return this
 
-    def create_k_fold(self) -> object:  #
-        return None
+    @staticmethod
+    def create_k_fold() -> object:  # creates model through learning in series
+        return KFold(n_splits=10, shuffle=True, random_state=0)  # loop x10
 
-    def accuracy_by_classifier(self):  #
-        return ""
+    def accuracy_by_classifier(self, this):  #
+        score = cross_val_score(RandomForestClassifier(), this.train, this.label,
+                                cv=self.create_k_fold(),
+                                n_jobs=1,
+                                scoring='accuracy')
+        return round(np.mean(score)*100,2)
 

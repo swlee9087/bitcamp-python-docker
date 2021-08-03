@@ -7,10 +7,7 @@ class TitanicViewTest(unittest.TestCase):
     mock = TitanicView()
     def test_modeling(self):
 
-        this = self.mock.preprocessing('train', 'test')
-        print(f'The Type of This is {type(this.train)} \n')
-        print(f'The head of Train is \n {this.train.head(2)}')
-        print(f'The head of Test is \n {this.test.head(2)}')
+        this = self.mock.preprocessing()
 
 
 if __name__ == '__main__':

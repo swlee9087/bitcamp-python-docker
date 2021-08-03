@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 # 2
@@ -31,22 +32,84 @@ class TitanicService(object):
             this.test = this.test.drop([i], axis=1)
         return this
 
-    def embarked_nominal(self):  # QSC
-        return None
+    @staticmethod
+    def embarked_nominal(this) -> object:  # QSC -> numbers
+        this.train = this.train.fillna({'Embarked':'S'})
+        this.test = this.test.fillna({'Embarked':'S'})
+        this.train['Embarked'] = this.train['Embarked'].map({'S': 1, 'C': 2, 'Q': 3})
+        this.test['Embarked'] = this.test['Embarked'].map({'S': 1, 'C': 2, 'Q': 3})
+        return this  # this에 다시 넣어주고 ctrlr로 넘김
 
-    def fare_ordinal(self):  # paid or not
-        return None
+    """['PassengerId', 'Survived', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp',
+     'Parch', 'Ticket', 'Fare', 'Cabin', 'Embarked']"""
 
-    def title_nominal(self):  # mr mrs miss master ms
-        return None
+    @staticmethod
+    def fare_ordinal(this) -> object:  # paid amount correlate to pclass?
+        this.train['Fare'] = this.train['Fare'].fillna(1)  # fill blanks
+        this.test['Fare'] = this.test['Fare'].fillna(1)
+        this.train['FareBand'] = pd.qcut(this.train['Fare'],4, labels={1,2,3,4})
+        this.test['FareBand'] = pd.qcut(this.test['Fare'], 4, labels={1,2,3,4})
+        # qcut() auto divides into range qty as specified
+        # bins = [-1,8,15,31,np.inf]  # np.inf = infinite range
+        # this.train = this.train.drop(['Fare'])
+        # this.test = this.test.drop(['Fare'])
+        return this
 
-    def gender_nominal(self):  # mf
-        return None
+    @staticmethod
+    def title_nominal(this) -> object:  # mr mrs miss master ms -> numbers
+        combine = [this.train, this.test]
+        for dataset in combine:
+            dataset['Title'] = dataset.Name.str.extract('([A-Za-z]+)\.', expand=False)  # vvv specific. expand=False to stop reading further
+        for dataset in combine:
+            dataset["Title"] = dataset['Title'].replace(['Capt', 'Col', 'Don', 'Dr', 'Major', 'Rev', 'Jonkheer','Dona','Mme'], 'Rare')
+            dataset["Title"] = dataset['Title'].replace(['Mile'], 'Mr')
+            dataset["Title"] = dataset['Title'].replace(['Miss'], 'Ms')
+            dataset["Title"] = dataset['Title'].replace(['Countess', 'Lady', 'Sir'], 'Nobles')
+        title_mapping = {'Mr':1, 'Ms':2, 'Mrs':3, 'Master':4, 'Nobles':5, 'Rare':6}
+        for dataset in combine:
+            dataset['Title'] = dataset['Title'].map(title_mapping)
+            dataset['Title'] = dataset['Title'].fillna(0)  # for those without titles
+        this.train = this.train
+        this.test = this.test
+        return this
 
-    def age_ordinal(self):  #
-        return None
+    @staticmethod
+    def gender_nominal(this) -> object:  # mf
+        combine = [this.train, this.test]
+        sex_mapping = {'male':0, 'female':1}
+        for dataset in combine:
+            dataset['Gender'] = dataset['Sex'].map(sex_mapping)
+        this.train = this.train
+        this.test = this.test
+        return this
 
-    def create_k_fold(self):  #
+    @staticmethod
+    def age_ordinal(this) -> object:  # qcut() ok but nah. split into age grps. don't combine
+        train = this.train
+        test = this.test
+        train['Age'] = train['Age'].fillna(-0.5)  # -0.5 so that the are classified into unknown
+        test['Age'] = test['Age'].fillna(-0.5)
+        bins = [-1, 0, 5, 12, 18, 24, 35, 60, np.inf]
+        labels = ['Unknown','Baby','Child','Teenager','Student','Young Adult','Adult', 'Senior']
+        train['AgeGroup'] = pd.cut(train['Age'], bins, labels=labels)  # unlike qcut(0 that divs equally into qrts, cut() divs as bins specified
+        test['AgeGroup'] = pd.cut(test['Age'], bins, labels=labels)
+        age_title_mapping = {0: 'Unknown', 1: 'Baby', 2: 'Child', 3: 'Teenager', 4: 'Student', 5: 'Young Adult',
+                             6: 'Adult', 7: 'Senior'}
+        for i in range(len(train['AgeGroup'])):
+            if train['AgeGroup'][i] == 'Unknown':
+                train['AgeGroup'][i] =age_title_mapping[train['Title'][i]]
+        for i in range(len(test['AgeGroup'])):
+            if test['AgeGroup'][i] == 'Unknown':
+                test['AgeGroup'][i] =age_title_mapping[test['Title'][i]]
+        age_mapping = {'Unknown': 0, 'Baby': 1, 'Child': 2, 'Teenager': 3, 'Student': 4, 'Young Adult': 5, 'Adult': 6,
+                       'Senior': 7}
+        train['AgeGroup'] = train['AgeGroup'].map(age_mapping)
+        test['AgeGroup'] = test['AgeGroup'].map(age_mapping)
+        this.train = this.train
+        this.test = this.test
+        return this
+
+    def create_k_fold(self) -> object:  #
         return None
 
     def accuracy_by_classifier(self):  #
